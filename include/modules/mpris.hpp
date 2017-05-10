@@ -13,13 +13,10 @@ namespace modules {
    public:
     explicit mpris_module(const bar_settings&, string);
 
-//    void teardown();
     inline bool connected() const;
- //   void idle();
     bool has_event();
     bool update();
     string get_format() const;
-//    string get_output();
     bool build(builder* builder, const string& tag) const;
     void idle();
 
@@ -59,7 +56,6 @@ namespace modules {
 
     mpris::song m_song;
     unique_ptr<mpris::status> m_status = unique_ptr<mpris::status>(new mpris::status());
-    //unique_ptr<song> m_song;
 
     string m_player;
 

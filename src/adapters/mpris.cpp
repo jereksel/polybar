@@ -286,14 +286,17 @@ namespace mpris {
     return unique_ptr<status>(st);
   }
 
-  string connection::get_formatted_elapsed() {
+  chrono::microseconds connection::get_elapsed() {
     auto object = get_object();
-    if (!object) {
-      return "N/A"s;
-    }
+    if (!object) return 0us;
 
     auto position_us = polybar_media_player2_player_get_position(object.get());
-    return connection::duration_to_string(chrono::microseconds(position_us));
+    return chrono::microseconds(position_us);
+  }
+
+  string connection::get_formatted_elapsed() {
+    if (!get_object()) return "";
+    return connection::duration_to_string(get_elapsed());
   }
 
   void connection::set_loop_status(const string &loop_status) {

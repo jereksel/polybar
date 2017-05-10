@@ -21,30 +21,14 @@ namespace mpris {
     song(string title, string album, string artist, chrono::microseconds length)
       : title(title), album(album), artist(artist), length(length) {}
 
-    bool operator==(song other) {
-      return title == other.get_title() && album == other.get_album() && artist == other.get_artist();
+    bool operator == (const song &other) {
+      return title == other.title && album == other.album && artist == other.artist;
     }
 
-    bool operator!=(song other) {
+    bool operator != (const song &other) {
       return !(*this == other);
     }
 
-    // TODO: Macro ???
-    string get_title() {
-      return title;
-    }
-    string get_album() {
-      return album;
-    }
-    string get_artist() {
-      return artist;
-    }
-
-    chrono::microseconds get_length() {
-      return length;
-    }
-
-   private:
     string title;
     string album;
     string artist;
@@ -57,33 +41,34 @@ namespace mpris {
     bool shuffle = false;
     string loop_status = "";
     string playback_status = "";
-    string get_formatted_elapsed();
-    string get_formatted_total();
   };
 
   class connection {
    public:
-       connection(const logger& m_log, string player) : player(player), m_log(m_log){
-           player_proxy = create_player_proxy();
-           mpris_proxy = create_mpris_proxy();
-       };
-    song get_current_song();
-    void pause_play();
-    void seek(int change);
-    void set_random(bool mode);
-    std::map<std::string, std::string> get_metadata();
+    connection(const logger& m_log, string player) : player(player), m_log(m_log) {
+      player_proxy = create_player_proxy();
+      mpris_proxy = create_mpris_proxy();
+    };
+
     void play();
+    void pause_play();
     void pause();
     void stop();
     void prev();
     void next();
-    bool connected();
-    bool has_event();
+    void seek(int change);
+
+    song get_current_song();
+    std::map<std::string, std::string> get_metadata();
     string get_loop_status();
     bool get_shuffle();
     song get_song();
     std::unique_ptr<status> get_status();
+    chrono::microseconds get_elapsed();
     string get_formatted_elapsed();
+
+    bool connected();
+    bool has_event();
 
     void set_loop_status(const string &loop_status);
     void set_shuffle(bool shuffle);

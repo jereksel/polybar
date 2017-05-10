@@ -142,12 +142,12 @@ namespace modules {
 
     elapsed_str = m_connection->get_formatted_elapsed();
     m_song = m_connection->get_song();
-    total_str = mpris::connection::duration_to_string(m_song.get_length());
+    total_str = mpris::connection::duration_to_string(m_song.length);
     m_status = m_connection->get_status();
 
-    title = m_song.get_title();
-    artist = m_song.get_artist();
-    album = m_song.get_album();
+    title = m_song.title;
+    artist = m_song.artist;
+    album = m_song.album;
 
     if (m_label_song) {
       m_label_song->reset_tokens();
@@ -179,8 +179,8 @@ namespace modules {
     } else if (tag == TAG_LABEL_TIME && !is_stopped) {
       builder->node(m_label_time);
     } else if (tag == TAG_BAR_PROGRESS && !is_stopped) {
-      //      builder->node(m_bar_progress->output(!m_status ? 0 : m_status->get_elapsed_percentage()));
-      builder->node(m_bar_progress->output(!m_status ? 0 : 20));
+      auto elapsed_percent = 100 * m_connection->get_elapsed() / m_song.length;
+      builder->node(m_bar_progress->output(elapsed_percent));
     } else if (tag == TAG_LABEL_OFFLINE) {
       builder->node(m_label_offline);
     } else if (tag == TAG_ICON_RANDOM) {
@@ -225,10 +225,6 @@ namespace modules {
   }
 
   bool mpris_module::input(string&& cmd) {
-    if (cmd.compare(0, 5, "mpris") != 0) {
-      return false;
-    }
-
     if (cmd == EVENT_PLAY) {
       m_connection->play();
     } else if (cmd == EVENT_PAUSE) {
@@ -251,20 +247,6 @@ namespace modules {
       } else if (m_status->loop_status == "Playlist") {
         m_connection->set_loop_status("None");
       }
-      /*} else if (cmd.compare(0, strlen(EVENT_SEEK), EVENT_SEEK) == 0) {
-      auto s = cmd.substr(strlen(EVENT_SEEK));
-      int percentage = 0;
-      if (s.empty()) {
-        return false;
-      } else if (s[0] == '+') {
-        //    percentage = status->get_elapsed_percentage() + std::atoi(s.substr(1).c_str());
-      } else if (s[0] == '-') {
-        //    percentage = status->get_elapsed_percentage() - std::atoi(s.substr(1).c_str());
-      } else {
-        percentage = std::atoi(s.c_str());
-      }
-      //    mpd->seek(status->get_songid(), status->get_seek_position(percentage));
-      //    */
     } else {
       return false;
     }
