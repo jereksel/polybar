@@ -34,8 +34,6 @@ namespace modules {
     static constexpr const char* TAG_LABEL_SONG{"<label-song>"};
     static constexpr const char* TAG_LABEL_TIME{"<label-time>"};
     static constexpr const char* TAG_ICON_RANDOM{"<icon-random>"};
-    static constexpr const char* TAG_ICON_REPEAT{"<icon-repeat>"};
-    static constexpr const char* TAG_ICON_REPEAT_ONE{"<icon-repeatone>"};
     static constexpr const char* TAG_ICON_PREV{"<icon-prev>"};
     static constexpr const char* TAG_ICON_STOP{"<icon-stop>"};
     static constexpr const char* TAG_ICON_PLAY{"<icon-play>"};
@@ -43,6 +41,7 @@ namespace modules {
     static constexpr const char* TAG_ICON_NEXT{"<icon-next>"};
     static constexpr const char* TAG_ICON_SEEKB{"<icon-seekb>"};
     static constexpr const char* TAG_ICON_SEEKF{"<icon-seekf>"};
+    static constexpr const char* TAG_ICON_LOOP{"<icon-loop-status>"};
 
     static constexpr const char* FORMAT_OFFLINE{"format-offline"};
     static constexpr const char* TAG_LABEL_OFFLINE{"<label-offline>"};
@@ -52,10 +51,9 @@ namespace modules {
     static constexpr const char* EVENT_STOP{"mprisstop"};
     static constexpr const char* EVENT_PREV{"mprisprev"};
     static constexpr const char* EVENT_NEXT{"mprisnext"};
-    static constexpr const char* EVENT_REPEAT{"mprisrepeat"};
-    static constexpr const char* EVENT_REPEAT_ONE{"mprisrepeatone"};
     static constexpr const char* EVENT_RANDOM{"mprisrandom"};
     static constexpr const char* EVENT_SEEK{"mprisseek"};
+    static constexpr const char* EVENT_NEXT_LOOP_MODE{"mprisloopmode"};
 
     unique_ptr<mpris::connection> m_connection;
 

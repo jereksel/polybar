@@ -21,8 +21,8 @@ namespace modules {
 
     m_formatter->add(FORMAT_ONLINE, TAG_LABEL_SONG,
         {TAG_BAR_PROGRESS, TAG_TOGGLE, TAG_TOGGLE_STOP, TAG_LABEL_SONG, TAG_LABEL_TIME, TAG_ICON_RANDOM,
-            TAG_ICON_REPEAT, TAG_ICON_REPEAT_ONE, TAG_ICON_PREV, TAG_ICON_STOP, TAG_ICON_PLAY, TAG_ICON_PAUSE,
-            TAG_ICON_NEXT, TAG_ICON_SEEKB, TAG_ICON_SEEKF});
+            TAG_ICON_PREV, TAG_ICON_STOP, TAG_ICON_PLAY, TAG_ICON_PAUSE,
+            TAG_ICON_NEXT, TAG_ICON_SEEKB, TAG_ICON_SEEKF, TAG_ICON_LOOP});
 
     m_formatter->add(FORMAT_OFFLINE, "", {TAG_LABEL_OFFLINE});
 
@@ -50,13 +50,13 @@ namespace modules {
       m_icons->add("seekf", load_icon(m_conf, name(), TAG_ICON_SEEKF));
     }
     if (m_formatter->has(TAG_ICON_RANDOM)) {
-      m_icons->add("random", load_icon(m_conf, name(), TAG_ICON_RANDOM));
+      m_icons->add("random", load_icon(m_conf, name(), "<icon-random>"));
+      m_icons->add("no-random", load_icon(m_conf, name(), "<icon-no-random>"));
     }
-    if (m_formatter->has(TAG_ICON_REPEAT)) {
-      m_icons->add("repeat", load_icon(m_conf, name(), TAG_ICON_REPEAT));
-    }
-    if (m_formatter->has(TAG_ICON_REPEAT_ONE)) {
-      m_icons->add("repeat_one", load_icon(m_conf, name(), TAG_ICON_REPEAT_ONE));
+    if (m_formatter->has(TAG_ICON_LOOP)) {
+      m_icons->add("loop-none", load_icon(m_conf, name(), "<icon-loop-none>"));
+      m_icons->add("loop-track", load_icon(m_conf, name(), "<icon-loop-track>"));
+      m_icons->add("loop-playlist", load_icon(m_conf, name(), "<icon-loop-playlist>"));
     }
 
     if (m_formatter->has(TAG_LABEL_SONG)) {
@@ -64,11 +64,6 @@ namespace modules {
     }
     if (m_formatter->has(TAG_LABEL_TIME)) {
       m_label_time = load_optional_label(m_conf, name(), TAG_LABEL_TIME, "%elapsed% / %total%");
-    }
-    if (m_formatter->has(TAG_ICON_RANDOM) || m_formatter->has(TAG_ICON_REPEAT) ||
-        m_formatter->has(TAG_ICON_REPEAT_ONE)) {
-      m_toggle_on_color = m_conf.get(name(), "toggle-on-foreground", ""s);
-      m_toggle_off_color = m_conf.get(name(), "toggle-off-foreground", ""s);
     }
     if (m_formatter->has(TAG_LABEL_OFFLINE, FORMAT_OFFLINE)) {
       m_label_offline = load_label(m_conf, name(), TAG_LABEL_OFFLINE);
@@ -108,7 +103,11 @@ namespace modules {
 
     auto new_status = m_connection->get_status();
 
-    if (new_status == nullptr || m_status->playback_status != new_status->playback_status) {
+    if (new_status == nullptr ||
+        m_status->playback_status != new_status->playback_status ||
+        m_status->loop_status != new_status->loop_status ||
+        m_status->shuffle != new_status->shuffle)
+    {
       return true;
     }
 
@@ -146,8 +145,6 @@ namespace modules {
     total_str = mpris::connection::duration_to_string(m_song.get_length());
     m_status = m_connection->get_status();
 
-    //auto status = m_connection->get_status();
-
     title = m_song.get_title();
     artist = m_song.get_artist();
     album = m_song.get_album();
@@ -163,17 +160,6 @@ namespace modules {
       m_label_time->reset_tokens();
       m_label_time->replace_token("%elapsed%", elapsed_str);
       m_label_time->replace_token("%total%", total_str);
-    }
-
-    if (m_icons->has("random")) {
-      m_icons->get("random")->m_foreground = m_status && m_status->random() ? m_toggle_on_color : m_toggle_off_color;
-    }
-    if (m_icons->has("repeat")) {
-      m_icons->get("repeat")->m_foreground = m_status && m_status->repeat() ? m_toggle_on_color : m_toggle_off_color;
-    }
-    if (m_icons->has("repeat_one")) {
-      m_icons->get("repeat_one")->m_foreground =
-          m_status && m_status->single() ? m_toggle_on_color : m_toggle_off_color;
     }
 
     return true;
@@ -198,11 +184,25 @@ namespace modules {
     } else if (tag == TAG_LABEL_OFFLINE) {
       builder->node(m_label_offline);
     } else if (tag == TAG_ICON_RANDOM) {
-      builder->cmd(mousebtn::LEFT, EVENT_RANDOM, m_icons->get("random"));
-    } else if (tag == TAG_ICON_REPEAT) {
-      builder->cmd(mousebtn::LEFT, EVENT_REPEAT, m_icons->get("repeat"));
-    } else if (tag == TAG_ICON_REPEAT_ONE) {
-      builder->cmd(mousebtn::LEFT, EVENT_REPEAT_ONE, m_icons->get("repeat_one"));
+      string shuffle;
+      if (!m_status || !m_status->shuffle) {
+        shuffle = "no-random";
+      } else {
+        shuffle = "random";
+      }
+      builder->cmd(mousebtn::LEFT, EVENT_RANDOM, m_icons->get(shuffle));
+    } else if (tag == TAG_ICON_LOOP) {
+      string loop_status;
+      if (!m_status || m_status->loop_status == "None") {
+        loop_status = "loop-none";
+      } else if (m_status->loop_status == "Track") {
+        loop_status = "loop-track";
+      } else if (m_status->loop_status == "Playlist") {
+        loop_status = "loop-playlist";
+      } else {
+        loop_status = "loop-none";
+      }
+      builder->cmd(mousebtn::LEFT, EVENT_NEXT_LOOP_MODE, m_icons->get(loop_status));
     } else if (tag == TAG_ICON_PREV) {
       builder->cmd(mousebtn::LEFT, EVENT_PREV, m_icons->get("prev"));
     } else if ((tag == TAG_ICON_STOP || tag == TAG_TOGGLE_STOP) && (is_playing || is_paused)) {
@@ -239,14 +239,19 @@ namespace modules {
       m_connection->prev();
     } else if (cmd == EVENT_NEXT) {
       m_connection->next();
-    } else if (cmd == EVENT_REPEAT_ONE) {
-      // mpd->set_single(!status->single());
-    } else if (cmd == EVENT_REPEAT) {
-      // mpd->set_repeat(!status->repeat());
     } else if (cmd == EVENT_RANDOM) {
-      // mpd->set_random(!status->random());
-        /*
-    } else if (cmd.compare(0, strlen(EVENT_SEEK), EVENT_SEEK) == 0) {
+      if (m_status) {
+        m_connection->set_shuffle(!m_status->shuffle);
+      }
+    } else if (cmd == EVENT_NEXT_LOOP_MODE) {
+      if (!m_status || m_status->loop_status == "None" || m_status->loop_status == "") {
+        m_connection->set_loop_status("Track");
+      } else if (m_status->loop_status == "Track") {
+        m_connection->set_loop_status("Playlist");
+      } else if (m_status->loop_status == "Playlist") {
+        m_connection->set_loop_status("None");
+      }
+      /*} else if (cmd.compare(0, strlen(EVENT_SEEK), EVENT_SEEK) == 0) {
       auto s = cmd.substr(strlen(EVENT_SEEK));
       int percentage = 0;
       if (s.empty()) {

@@ -59,15 +59,6 @@ namespace mpris {
     string playback_status = "";
     string get_formatted_elapsed();
     string get_formatted_total();
-    bool random() {
-      return true;
-    }
-    bool repeat() {
-      return true;
-    }
-    bool single() {
-      return true;
-    }
   };
 
   class connection {
@@ -89,9 +80,14 @@ namespace mpris {
     bool connected();
     bool has_event();
     string get_loop_status();
+    bool get_shuffle();
     song get_song();
     std::unique_ptr<status> get_status();
     string get_formatted_elapsed();
+
+    void set_loop_status(const string &loop_status);
+    void set_shuffle(bool shuffle);
+
     static string duration_to_string(const chrono::microseconds &);
 
    private:

@@ -212,6 +212,13 @@ namespace mpris {
     }
   }
 
+  bool connection::get_shuffle() {
+    auto object = get_object();
+    if (!object) return false;
+
+    return polybar_media_player2_player_get_shuffle(object.get());
+  }
+
   song connection::get_song() {
     auto object = get_object();
 
@@ -270,10 +277,12 @@ namespace mpris {
 
     auto loop_status = get_loop_status();
     auto playback_status = get_playback_status();
+    auto shuffle = get_shuffle();
 
     auto st = new status();
     st->loop_status = loop_status;
     st->playback_status = playback_status;
+    st->shuffle = shuffle;
     return unique_ptr<status>(st);
   }
 
@@ -285,6 +294,20 @@ namespace mpris {
 
     auto position_us = polybar_media_player2_player_get_position(object.get());
     return connection::duration_to_string(chrono::microseconds(position_us));
+  }
+
+  void connection::set_loop_status(const string &loop_status) {
+    auto object = get_object();
+    if (!object) return;
+
+    polybar_media_player2_player_set_loop_status(object.get(), loop_status.c_str());
+  }
+
+  void connection::set_shuffle(bool shuffle) {
+    auto object = get_object();
+    if (!object) return;
+
+    polybar_media_player2_player_set_shuffle(object.get(), shuffle);
   }
 
   string connection::duration_to_string(const chrono::microseconds &duration) {
