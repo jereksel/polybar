@@ -10,7 +10,7 @@ namespace mpris {
 
   // https://developer.gnome.org/glib/stable/glib-GVariant.html#g-variant-iter-loop
 
-  shared_ptr<PolybarOrgMprisMediaPlayer2Player> mprisconnection::get_object() {
+  shared_ptr<PolybarMediaPlayer2Player> mprisconnection::get_object() {
     if (++mpris_proxy_count > 10) {
       mpris_proxy_count = 0;
       player_proxy = create_player_proxy();
@@ -18,7 +18,7 @@ namespace mpris {
     return player_proxy;
   }
 
-  shared_ptr<PolybarOrgMprisMediaPlayer2> mprisconnection::get_mpris_proxy() {
+  shared_ptr<PolybarMediaPlayer2> mprisconnection::get_mpris_proxy() {
     if (++player_proxy_count > 10) {
       player_proxy_count = 0;
       mpris_proxy = create_mpris_proxy();
@@ -26,14 +26,14 @@ namespace mpris {
     return mpris_proxy;
   }
 
-  shared_ptr<PolybarOrgMprisMediaPlayer2Player> mprisconnection::create_player_proxy() {
+  shared_ptr<PolybarMediaPlayer2Player> mprisconnection::create_player_proxy() {
     GError* error = nullptr;
 
-    auto destructor = [&](PolybarOrgMprisMediaPlayer2Player* proxy) { g_object_unref(proxy); };
+    auto destructor = [&](PolybarMediaPlayer2Player* proxy) { g_object_unref(proxy); };
 
     auto player_object = "org.mpris.MediaPlayer2." + player;
 
-    auto proxy = polybar_org_mpris_media_player2_player_proxy_new_for_bus_sync(
+    auto proxy = polybar_media_player2_player_proxy_new_for_bus_sync(
         G_BUS_TYPE_SESSION, G_DBUS_PROXY_FLAGS_NONE, player_object.data(), "/org/mpris/MediaPlayer2", NULL, &error);
 
     if (error != nullptr) {
@@ -42,20 +42,20 @@ namespace mpris {
       return nullptr;
     }
 
-    return shared_ptr<PolybarOrgMprisMediaPlayer2Player>(proxy, destructor);
+    return shared_ptr<PolybarMediaPlayer2Player>(proxy, destructor);
   }
 
-  shared_ptr<PolybarOrgMprisMediaPlayer2> mprisconnection::create_mpris_proxy() {
+  shared_ptr<PolybarMediaPlayer2> mprisconnection::create_mpris_proxy() {
     GError* error = nullptr;
 
     auto player_object = "org.mpris.MediaPlayer2." + player;
 
     auto destructor = [&](auto* proxy) { g_object_unref(proxy); };
 
-    auto proxy_raw = polybar_org_mpris_media_player2_proxy_new_for_bus_sync(
+    auto proxy_raw = polybar_media_player2_proxy_new_for_bus_sync(
         G_BUS_TYPE_SESSION, G_DBUS_PROXY_FLAGS_NONE, player_object.data(), "/org/mpris/MediaPlayer2", NULL, &error);
 
-    auto proxy = shared_ptr<PolybarOrgMprisMediaPlayer2>(proxy_raw, destructor);
+    auto proxy = shared_ptr<PolybarMediaPlayer2>(proxy_raw, destructor);
 
     if (error != nullptr) {
       m_log.err("Empty object. Error: %s", error->message);
@@ -67,7 +67,7 @@ namespace mpris {
   }
 
   bool mprisconnection::connected() {
-    auto entry = polybar_org_mpris_media_player2_get_desktop_entry(get_mpris_proxy().get());
+    auto entry = polybar_media_player2_get_desktop_entry(get_mpris_proxy().get());
     return entry != nullptr;
   }
 
@@ -80,7 +80,7 @@ namespace mpris {
       return;
     }
 
-    polybar_org_mpris_media_player2_player_call_play_pause_sync(object.get(), NULL, &error);
+    polybar_media_player2_player_call_play_pause_sync(object.get(), NULL, &error);
 
     if (error != nullptr) {
       m_log.err("Empty session bus");
@@ -98,7 +98,7 @@ namespace mpris {
       return;
     }
 
-    polybar_org_mpris_media_player2_player_call_play_sync(object.get(), NULL, &error);
+    polybar_media_player2_player_call_play_sync(object.get(), NULL, &error);
 
     if (error != nullptr) {
       m_log.err("Empty session bus");
@@ -115,7 +115,7 @@ namespace mpris {
       return;
     }
 
-    polybar_org_mpris_media_player2_player_call_pause_sync(object.get(), NULL, &error);
+    polybar_media_player2_player_call_pause_sync(object.get(), NULL, &error);
 
     if (error != nullptr) {
       m_log.err("Empty session bus");
@@ -133,7 +133,7 @@ namespace mpris {
       return;
     }
 
-    polybar_org_mpris_media_player2_player_call_previous_sync(object.get(), NULL, &error);
+    polybar_media_player2_player_call_previous_sync(object.get(), NULL, &error);
 
     if (error != nullptr) {
       m_log.err("Empty session bus");
@@ -151,7 +151,7 @@ namespace mpris {
       return;
     }
 
-    polybar_org_mpris_media_player2_player_call_next_sync(object.get(), NULL, &error);
+    polybar_media_player2_player_call_next_sync(object.get(), NULL, &error);
 
     if (error != nullptr) {
       m_log.err("Empty session bus");
@@ -169,7 +169,7 @@ namespace mpris {
       return;
     }
 
-    polybar_org_mpris_media_player2_player_call_stop_sync(object.get(), NULL, &error);
+    polybar_media_player2_player_call_stop_sync(object.get(), NULL, &error);
 
     if (error != nullptr) {
       m_log.err("Empty session bus");
@@ -185,7 +185,7 @@ namespace mpris {
       return "";
     }
 
-    auto arr = polybar_org_mpris_media_player2_player_get_loop_status(object.get());
+    auto arr = polybar_media_player2_player_get_loop_status(object.get());
 
     if (arr == nullptr) {
       return "";
@@ -201,7 +201,7 @@ namespace mpris {
       return "";
     }
 
-    auto arr = polybar_org_mpris_media_player2_player_get_playback_status(object.get());
+    auto arr = polybar_media_player2_player_get_playback_status(object.get());
 
     if (arr == nullptr) {
       return "";
@@ -225,7 +225,7 @@ namespace mpris {
     string album;
     string artist;
 
-    auto variant = polybar_org_mpris_media_player2_player_get_metadata(object.get());
+    auto variant = polybar_media_player2_player_get_metadata(object.get());
 
     if (variant == nullptr) {
       return mprissong();

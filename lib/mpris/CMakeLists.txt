@@ -18,7 +18,7 @@ endif()
 add_custom_command(
   OUTPUT ${PROJECT_SOURCE_DIR}/mpris.c ${PROJECT_SOURCE_DIR}/mpris.h
   COMMAND ${GDBUS_CODEGEN} --generate-c-code ${PROJECT_SOURCE_DIR}/mpris
-#                           --interface org.mpris
+                           --interface org.mpris
                            --c-namespace Polybar
                            ${PROJECT_SOURCE_DIR}/mpris.xml
   MAIN_DEPENDENCY mpris.xml
