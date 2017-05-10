@@ -15,17 +15,17 @@ namespace mpris {
   template <typename T>
   using deleted_unique_ptr = std::unique_ptr<T, std::function<void(T*)>>;
 
-  class mprissong {
+  class song {
    public:
-    mprissong() : mprissong("", "", "", 0us) {}
-    mprissong(string title, string album, string artist, chrono::microseconds length)
+    song() : song("", "", "", 0us) {}
+    song(string title, string album, string artist, chrono::microseconds length)
       : title(title), album(album), artist(artist), length(length) {}
 
-    bool operator==(mprissong other) {
+    bool operator==(song other) {
       return title == other.get_title() && album == other.get_album() && artist == other.get_artist();
     }
 
-    bool operator!=(mprissong other) {
+    bool operator!=(song other) {
       return !(*this == other);
     }
 
@@ -51,7 +51,7 @@ namespace mpris {
     chrono::microseconds length;
   };
 
-  class mprisstatus {
+  class status {
    public:
     int position = -1;
     bool shuffle = false;
@@ -70,13 +70,13 @@ namespace mpris {
     }
   };
 
-  class mprisconnection {
+  class connection {
    public:
-       mprisconnection(const logger& m_log, string player) : player(player), m_log(m_log){
+       connection(const logger& m_log, string player) : player(player), m_log(m_log){
            player_proxy = create_player_proxy();
            mpris_proxy = create_mpris_proxy();
        };
-    mprissong get_current_song();
+    song get_current_song();
     void pause_play();
     void seek(int change);
     void set_random(bool mode);
@@ -89,8 +89,8 @@ namespace mpris {
     bool connected();
     bool has_event();
     string get_loop_status();
-    mprissong get_song();
-    std::unique_ptr<mprisstatus> get_status();
+    song get_song();
+    std::unique_ptr<status> get_status();
     string get_formatted_elapsed();
     static string duration_to_string(const chrono::microseconds &);
 

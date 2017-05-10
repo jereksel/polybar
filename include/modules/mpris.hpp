@@ -8,8 +8,6 @@
 
 POLYBAR_NS
 
-using namespace mpris;
-
 namespace modules {
   class mpris_module : public event_module<mpris_module>, public input_handler {
    public:
@@ -59,11 +57,11 @@ namespace modules {
     static constexpr const char* EVENT_RANDOM{"mprisrandom"};
     static constexpr const char* EVENT_SEEK{"mprisseek"};
 
-    unique_ptr<mprisconnection> m_connection;
+    unique_ptr<mpris::connection> m_connection;
 
-    mprissong m_song;
-    unique_ptr<mprisstatus> m_status = unique_ptr<mprisstatus>(new mprisstatus());
-    //unique_ptr<mprissong> m_song;
+    mpris::song m_song;
+    unique_ptr<mpris::status> m_status = unique_ptr<mpris::status>(new mpris::status());
+    //unique_ptr<song> m_song;
 
     string m_player;
 

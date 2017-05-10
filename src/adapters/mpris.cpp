@@ -12,7 +12,7 @@ namespace mpris {
 
   // https://developer.gnome.org/glib/stable/glib-GVariant.html#g-variant-iter-loop
 
-  shared_ptr<PolybarMediaPlayer2Player> mprisconnection::get_object() {
+  shared_ptr<PolybarMediaPlayer2Player> connection::get_object() {
     if (++mpris_proxy_count > 10) {
       mpris_proxy_count = 0;
       player_proxy = create_player_proxy();
@@ -20,7 +20,7 @@ namespace mpris {
     return player_proxy;
   }
 
-  shared_ptr<PolybarMediaPlayer2> mprisconnection::get_mpris_proxy() {
+  shared_ptr<PolybarMediaPlayer2> connection::get_mpris_proxy() {
     if (++player_proxy_count > 10) {
       player_proxy_count = 0;
       mpris_proxy = create_mpris_proxy();
@@ -28,7 +28,7 @@ namespace mpris {
     return mpris_proxy;
   }
 
-  shared_ptr<PolybarMediaPlayer2Player> mprisconnection::create_player_proxy() {
+  shared_ptr<PolybarMediaPlayer2Player> connection::create_player_proxy() {
     GError* error = nullptr;
 
     auto destructor = [&](PolybarMediaPlayer2Player* proxy) { g_object_unref(proxy); };
@@ -47,7 +47,7 @@ namespace mpris {
     return shared_ptr<PolybarMediaPlayer2Player>(proxy, destructor);
   }
 
-  shared_ptr<PolybarMediaPlayer2> mprisconnection::create_mpris_proxy() {
+  shared_ptr<PolybarMediaPlayer2> connection::create_mpris_proxy() {
     GError* error = nullptr;
 
     auto player_object = "org.mpris.MediaPlayer2." + player;
@@ -68,12 +68,12 @@ namespace mpris {
     return proxy;
   }
 
-  bool mprisconnection::connected() {
+  bool connection::connected() {
     auto entry = polybar_media_player2_get_desktop_entry(get_mpris_proxy().get());
     return entry != nullptr;
   }
 
-  void mprisconnection::pause_play() {
+  void connection::pause_play() {
     GError* error = nullptr;
 
     auto object = get_object();
@@ -91,7 +91,7 @@ namespace mpris {
     }
   }
 
-  void mprisconnection::play() {
+  void connection::play() {
     GError* error = nullptr;
 
     auto object = get_object();
@@ -108,7 +108,7 @@ namespace mpris {
     }
   }
 
-  void mprisconnection::pause() {
+  void connection::pause() {
     GError* error = nullptr;
 
     auto object = get_object();
@@ -126,7 +126,7 @@ namespace mpris {
     }
   }
 
-  void mprisconnection::prev() {
+  void connection::prev() {
     GError* error = nullptr;
 
     auto object = get_object();
@@ -144,7 +144,7 @@ namespace mpris {
     }
   }
 
-  void mprisconnection::next() {
+  void connection::next() {
     GError* error = nullptr;
 
     auto object = get_object();
@@ -162,7 +162,7 @@ namespace mpris {
     }
   }
 
-  void mprisconnection::stop() {
+  void connection::stop() {
     GError* error = nullptr;
 
     auto object = get_object();
@@ -180,7 +180,7 @@ namespace mpris {
     }
   }
 
-  string mprisconnection::get_loop_status() {
+  string connection::get_loop_status() {
     auto object = get_object();
 
     if (object == nullptr) {
@@ -196,7 +196,7 @@ namespace mpris {
     }
   }
 
-  string mprisconnection::get_playback_status() {
+  string connection::get_playback_status() {
     auto object = get_object();
 
     if (object == nullptr) {
@@ -212,11 +212,11 @@ namespace mpris {
     }
   }
 
-  mprissong mprisconnection::get_song() {
+  song connection::get_song() {
     auto object = get_object();
 
     if (object == nullptr) {
-      return mprissong();
+      return song();
     }
 
     GVariantIter iter;
@@ -231,13 +231,13 @@ namespace mpris {
     auto variant = polybar_media_player2_player_get_metadata(object.get());
 
     if (variant == nullptr) {
-      return mprissong();
+      return song();
     }
 
     auto size = g_variant_iter_init(&iter, variant);
 
     if (size == 0) {
-      return mprissong();
+      return song();
     }
 
     while (g_variant_iter_loop(&iter, "{sv}", &key, &value)) {
@@ -258,10 +258,10 @@ namespace mpris {
       }
     }
 
-    return mprissong(title, album, artist, length);
+    return song(title, album, artist, length);
   }
 
-  unique_ptr<mprisstatus> mprisconnection::get_status() {
+  unique_ptr<status> connection::get_status() {
     auto object = get_object();
 
     if (object == nullptr) {
@@ -271,23 +271,23 @@ namespace mpris {
     auto loop_status = get_loop_status();
     auto playback_status = get_playback_status();
 
-    auto status = new mprisstatus();
-    status->loop_status = loop_status;
-    status->playback_status = playback_status;
-    return unique_ptr<mprisstatus>(status);
+    auto st = new status();
+    st->loop_status = loop_status;
+    st->playback_status = playback_status;
+    return unique_ptr<status>(st);
   }
 
-  string mprisconnection::get_formatted_elapsed() {
+  string connection::get_formatted_elapsed() {
     auto object = get_object();
     if (!object) {
       return "N/A"s;
     }
 
     auto position_us = polybar_media_player2_player_get_position(object.get());
-    return mprisconnection::duration_to_string(chrono::microseconds(position_us));
+    return connection::duration_to_string(chrono::microseconds(position_us));
   }
 
-  string mprisconnection::duration_to_string(const chrono::microseconds &duration) {
+  string connection::duration_to_string(const chrono::microseconds &duration) {
     auto duration_s = chrono::duration_cast<chrono::seconds>(duration);
     auto duration_m = chrono::duration_cast<chrono::minutes>(duration);
     duration_s -= chrono::duration_cast<chrono::seconds>(duration_m);

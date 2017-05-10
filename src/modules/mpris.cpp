@@ -8,6 +8,8 @@
 
 POLYBAR_NS
 
+using namespace mpris;
+
 namespace modules {
   template class module<mpris_module>;
 
@@ -78,7 +80,7 @@ namespace modules {
     // }}}
 
     m_lastsync = chrono::system_clock::now();
-    m_connection = factory_util::unique<mprisconnection>(m_log, m_player);
+    m_connection = factory_util::unique<mpris::connection>(m_log, m_player);
   }
 
   void mpris_module::idle() {
@@ -141,7 +143,7 @@ namespace modules {
 
     elapsed_str = m_connection->get_formatted_elapsed();
     m_song = m_connection->get_song();
-    total_str = mprisconnection::duration_to_string(m_song.get_length());
+    total_str = mpris::connection::duration_to_string(m_song.get_length());
     m_status = m_connection->get_status();
 
     //auto status = m_connection->get_status();
