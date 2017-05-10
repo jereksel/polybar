@@ -4,6 +4,10 @@
 #include <common.hpp>
 #include <components/logger.hpp>
 
+#include <chrono>
+namespace chrono = std::chrono;
+using namespace std::literals::chrono_literals;
+
 POLYBAR_NS
 
 namespace mpris {
@@ -13,8 +17,9 @@ namespace mpris {
 
   class mprissong {
    public:
-    mprissong() : mprissong("", "", "") {}
-    mprissong(string title, string album, string artist) : title(title), album(album), artist(artist) {}
+    mprissong() : mprissong("", "", "", 0us) {}
+    mprissong(string title, string album, string artist, chrono::microseconds length)
+      : title(title), album(album), artist(artist), length(length) {}
 
     bool operator==(mprissong other) {
       return title == other.get_title() && album == other.get_album() && artist == other.get_artist();
@@ -35,10 +40,15 @@ namespace mpris {
       return artist;
     }
 
+    chrono::microseconds get_length() {
+      return length;
+    }
+
    private:
     string title;
     string album;
     string artist;
+    chrono::microseconds length;
   };
 
   class mprisstatus {
@@ -81,6 +91,8 @@ namespace mpris {
     string get_loop_status();
     mprissong get_song();
     std::unique_ptr<mprisstatus> get_status();
+    string get_formatted_elapsed();
+    static string duration_to_string(const chrono::microseconds &);
 
    private:
     std::string player;

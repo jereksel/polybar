@@ -138,12 +138,10 @@ namespace modules {
     string elapsed_str;
     string total_str;
 
-    /*
-        elapsed_str = m_status->get_formatted_elapsed();
-        total_str = m_status->get_formatted_total();
-*/
 
+    elapsed_str = m_connection->get_formatted_elapsed();
     m_song = m_connection->get_song();
+    total_str = mprisconnection::duration_to_string(m_song.get_length());
     m_status = m_connection->get_status();
 
     //auto status = m_connection->get_status();

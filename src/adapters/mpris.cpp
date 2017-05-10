@@ -3,6 +3,8 @@
 #include <adapters/mpris.hpp>
 #include <common.hpp>
 #include <iostream>
+#include <iomanip>
+#include <sstream>
 
 POLYBAR_NS
 
@@ -224,6 +226,7 @@ namespace mpris {
     string title;
     string album;
     string artist;
+    chrono::microseconds length = 0us;
 
     auto variant = polybar_media_player2_player_get_metadata(object.get());
 
@@ -250,10 +253,12 @@ namespace mpris {
           artist = g_variant_get_string(var, nullptr);
           g_variant_unref(var);
         }
+      } else if (strcmp(key, "mpris:length") == 0) {
+        length = chrono::microseconds(g_variant_get_int64(value));
       }
     }
 
-    return mprissong(title, album, artist);
+    return mprissong(title, album, artist, length);
   }
 
   unique_ptr<mprisstatus> mprisconnection::get_status() {
@@ -270,6 +275,27 @@ namespace mpris {
     status->loop_status = loop_status;
     status->playback_status = playback_status;
     return unique_ptr<mprisstatus>(status);
+  }
+
+  string mprisconnection::get_formatted_elapsed() {
+    auto object = get_object();
+    if (!object) {
+      return "N/A"s;
+    }
+
+    auto position_us = polybar_media_player2_player_get_position(object.get());
+    return mprisconnection::duration_to_string(chrono::microseconds(position_us));
+  }
+
+  string mprisconnection::duration_to_string(const chrono::microseconds &duration) {
+    auto duration_s = chrono::duration_cast<chrono::seconds>(duration);
+    auto duration_m = chrono::duration_cast<chrono::minutes>(duration);
+    duration_s -= chrono::duration_cast<chrono::seconds>(duration_m);
+
+    std::ostringstream result;
+    result << duration_m.count() << ':'
+           << std::setfill('0') << std::setw(2) << duration_s.count();
+    return result.str();
   }
 }
 
