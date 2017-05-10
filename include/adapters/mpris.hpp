@@ -1,6 +1,6 @@
 #pragma once
 
-#include <mpris-generated.h>
+#include <mpris.h>
 #include <common.hpp>
 #include <components/logger.hpp>
 

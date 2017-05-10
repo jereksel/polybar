@@ -1,4 +1,4 @@
-#include <mpris-generated.h>
+#include <mpris.h>
 #include <string.h>
 #include <adapters/mpris.hpp>
 #include <common.hpp>
