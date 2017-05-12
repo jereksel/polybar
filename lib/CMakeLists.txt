@@ -45,5 +45,15 @@ endif()
 
 # }}}
 
+# Library: mpris {{{
+
+if(ENABLE_MPRIS)
+  add_subdirectory(mpris)
+  list(APPEND libs ${MPRIS_LIBRARIES})
+  list(APPEND dirs ${MPRIS_INCLUDE_DIRS})
+endif()
+
+###}}}
+
 set(libs ${libs} PARENT_SCOPE)
 set(dirs ${dirs} PARENT_SCOPE)

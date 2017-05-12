@@ -19,11 +19,11 @@ namespace debug_util {
   class scope_timer {
    public:
     using clock_t = std::chrono::high_resolution_clock;
-    using duration_t = std::chrono::milliseconds;
+    using chrono::microseconds = std::chrono::milliseconds;
 
     explicit scope_timer() : m_start(clock_t::now()) {}
     ~scope_timer() {
-      printf("%lums\n", std::chrono::duration_cast<duration_t>(clock_t::now() - m_start).count());
+      printf("%lums\n", std::chrono::duration_cast<chrono::microseconds>(clock_t::now() - m_start).count());
     }
 
    private:

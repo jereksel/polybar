@@ -8,20 +8,15 @@
 
 POLYBAR_NS
 
-using namespace mpris;
-
 namespace modules {
   class mpris_module : public event_module<mpris_module>, public input_handler {
    public:
     explicit mpris_module(const bar_settings&, string);
 
-//    void teardown();
     inline bool connected() const;
- //   void idle();
     bool has_event();
     bool update();
     string get_format() const;
-//    string get_output();
     bool build(builder* builder, const string& tag) const;
     void idle();
 
@@ -36,8 +31,6 @@ namespace modules {
     static constexpr const char* TAG_LABEL_SONG{"<label-song>"};
     static constexpr const char* TAG_LABEL_TIME{"<label-time>"};
     static constexpr const char* TAG_ICON_RANDOM{"<icon-random>"};
-    static constexpr const char* TAG_ICON_REPEAT{"<icon-repeat>"};
-    static constexpr const char* TAG_ICON_REPEAT_ONE{"<icon-repeatone>"};
     static constexpr const char* TAG_ICON_PREV{"<icon-prev>"};
     static constexpr const char* TAG_ICON_STOP{"<icon-stop>"};
     static constexpr const char* TAG_ICON_PLAY{"<icon-play>"};
@@ -45,6 +38,7 @@ namespace modules {
     static constexpr const char* TAG_ICON_NEXT{"<icon-next>"};
     static constexpr const char* TAG_ICON_SEEKB{"<icon-seekb>"};
     static constexpr const char* TAG_ICON_SEEKF{"<icon-seekf>"};
+    static constexpr const char* TAG_ICON_LOOP{"<icon-loop-status>"};
 
     static constexpr const char* FORMAT_OFFLINE{"format-offline"};
     static constexpr const char* TAG_LABEL_OFFLINE{"<label-offline>"};
@@ -54,16 +48,14 @@ namespace modules {
     static constexpr const char* EVENT_STOP{"mprisstop"};
     static constexpr const char* EVENT_PREV{"mprisprev"};
     static constexpr const char* EVENT_NEXT{"mprisnext"};
-    static constexpr const char* EVENT_REPEAT{"mprisrepeat"};
-    static constexpr const char* EVENT_REPEAT_ONE{"mprisrepeatone"};
     static constexpr const char* EVENT_RANDOM{"mprisrandom"};
     static constexpr const char* EVENT_SEEK{"mprisseek"};
+    static constexpr const char* EVENT_NEXT_LOOP_MODE{"mprisloopmode"};
 
-    unique_ptr<mprisconnection> m_connection;
+    unique_ptr<mpris::connection> m_connection;
 
-    mprissong m_song;
-    unique_ptr<mprisstatus> m_status = unique_ptr<mprisstatus>(new mprisstatus());
-    //unique_ptr<mprissong> m_song;
+    mpris::song m_song;
+    unique_ptr<mpris::status> m_status = unique_ptr<mpris::status>(new mpris::status());
 
     string m_player;
 
@@ -76,8 +68,7 @@ namespace modules {
     label_t m_label_time;
     label_t m_label_offline;
 
-    string m_toggle_on_color;
-    string m_toggle_off_color;
+    chrono::seconds m_seek_offset;
   };
 }
 
