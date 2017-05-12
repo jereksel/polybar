@@ -56,7 +56,7 @@ namespace mpris {
     void stop();
     void prev();
     void next();
-    void seek(int change);
+    void seek(chrono::seconds offset);
 
     song get_current_song();
     std::map<std::string, std::string> get_metadata();

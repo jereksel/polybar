@@ -68,8 +68,7 @@ namespace modules {
     label_t m_label_time;
     label_t m_label_offline;
 
-    string m_toggle_on_color;
-    string m_toggle_off_color;
+    chrono::seconds m_seek_offset;
   };
 }
 

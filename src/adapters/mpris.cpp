@@ -180,6 +180,19 @@ namespace mpris {
     }
   }
 
+  void connection::seek(chrono::seconds offset) {
+    auto object = get_object();
+    if (!object) return;
+
+    GError *error = nullptr;
+    auto offset_us = chrono::duration_cast<chrono::microseconds>(offset);
+    polybar_media_player2_player_call_seek_sync(object.get(), offset_us.count(), nullptr, &error);
+
+    if (error) {
+      m_log.err("Cannot call Player.Seek: "s + error->message);
+    }
+  }
+
   string connection::get_loop_status() {
     auto object = get_object();
 

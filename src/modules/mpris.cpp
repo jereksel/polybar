@@ -247,6 +247,16 @@ namespace modules {
       } else if (m_status->loop_status == "Playlist") {
         m_connection->set_loop_status("None");
       }
+    } else if (cmd.find(EVENT_SEEK) == 0) {
+      auto tok = strlen(EVENT_SEEK);
+      if (tok + 2 < cmd.length()) {
+        return false;
+      }
+      long offset_sec = std::stol(cmd.substr(tok));
+      if (offset_sec == 0) {
+        return false;
+      }
+      m_connection->seek(chrono::seconds(offset_sec));
     } else {
       return false;
     }
